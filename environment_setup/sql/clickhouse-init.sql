@@ -1,0 +1,3 @@
+CREATE DATABASE IF NOT EXISTS plm;
+TRUNCATE TABLE IF EXISTS plm.product_images;
+TRUNCATE TABLE IF EXISTS plm.product_facts;

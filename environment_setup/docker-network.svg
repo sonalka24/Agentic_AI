@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="560" viewBox="0 0 980 560" role="img" aria-label="Docker network with four containers">
+  <defs>
+    <style>
+      .bg { fill: #f6f2ea; }
+      .net { fill: #ffffff; stroke: #c9c1b6; stroke-width: 2; }
+      .node { stroke-width: 2; }
+      .node.codebase { fill: #ffe9c6; stroke: #c67d2a; }
+      .node.clickhouse { fill: #d8f1ff; stroke: #2a7bbf; }
+      .node.minio { fill: #e6f9e9; stroke: #2f8f4e; }
+      .node.metabase { fill: #f4e3ff; stroke: #7a3fb0; }
+      .title { font: 700 22px 'Georgia', 'Times New Roman', serif; fill: #2a241e; }
+      .label { font: 600 15px 'Georgia', 'Times New Roman', serif; fill: #2a241e; }
+      .sub { font: 13px 'Georgia', 'Times New Roman', serif; fill: #4c433a; }
+      .link { stroke: #7a3fb0; stroke-width: 4; fill: none; }
+      .link.alt { stroke: #2a7bbf; }
+      .link.alt2 { stroke: #2f8f4e; }
+      .link.alt3 { stroke: #c67d2a; }
+      .dash { stroke-dasharray: 6 6; }
+    </style>
+    <marker id="arrow-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#7a3fb0" />
+    </marker>
+    <marker id="arrow-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#2a7bbf" />
+    </marker>
+    <marker id="arrow-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#2f8f4e" />
+    </marker>
+    <marker id="arrow-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#c67d2a" />
+    </marker>
+  </defs>
+  <rect class="bg" x="0" y="0" width="980" height="560" rx="20" />
+  <text class="title" x="40" y="48">Docker Network — Local Environment</text>
+
+  <rect class="net" x="40" y="70" width="900" height="460" rx="18" />
+  <text class="label" x="60" y="105">bridge network</text>
+
+  <!-- Containers -->
+  <rect class="node codebase" x="80" y="150" width="320" height="100" rx="14" />
+  <text class="label" x="110" y="185">codebase</text>
+  <text class="sub" x="110" y="208">agent container</text>
+  <text class="sub" x="110" y="228">/home/useragent/codebase</text>
+  <text class="sub" x="110" y="246">OPENAI_API_KEY in env</text>
+
+  <rect class="node clickhouse" x="580" y="150" width="320" height="120" rx="14" />
+  <text class="label" x="610" y="185">clickhouse</text>
+  <text class="sub" x="610" y="208">analytics DB</text>
+  <text class="sub" x="610" y="232">port 8123</text>
+  <text class="sub" x="610" y="254">user/pass: admin / admin</text>
+
+  <rect class="node minio" x="80" y="330" width="320" height="120" rx="14" />
+  <text class="label" x="110" y="365">minio</text>
+  <text class="sub" x="110" y="388">object storage</text>
+  <text class="sub" x="110" y="412">console 9001, api 9002</text>
+  <text class="sub" x="110" y="434">user/pass: admin / admin12345</text>
+
+  <rect class="node metabase" x="580" y="330" width="320" height="120" rx="14" />
+  <text class="label" x="610" y="365">metabase</text>
+  <text class="sub" x="610" y="388">BI / dashboards</text>
+  <text class="sub" x="610" y="412">port 3000</text>
+  <text class="sub" x="610" y="434">user/pass: admin@example.com / admin12345</text>
+
+  <!-- Links -->
+  <path class="link alt" d="M 400 205 C 460 205 520 205 580 205" marker-end="url(#arrow-blue)" />
+  <path class="link alt2" d="M 400 390 C 460 390 520 390 580 390" marker-end="url(#arrow-green)" />
+  <path class="link alt3 dash" d="M 240 260 C 240 285 240 310 240 335" marker-end="url(#arrow-orange)" />
+  <path class="link dash" d="M 740 260 C 740 285 740 310 740 335" marker-end="url(#arrow-purple)" />
+
+  <text class="sub" x="470" y="195">ingest</text>
+  <text class="sub" x="470" y="380">analytics</text>
+  <text class="sub" x="250" y="310">data lake</text>
+  <text class="sub" x="750" y="310">dashboards</text>
+</svg>

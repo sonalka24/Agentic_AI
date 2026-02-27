@@ -1,0 +1,115 @@
+{
+  "Basic Product Information": {
+    "General": [
+      "Date",
+      "Product Description",
+      "Customer branding",
+      "Supplier",
+      "Source good by",
+      "Processed by",
+      "Finished",
+      "Replaces list",
+      "Approved by",
+      "Valid from"
+    ]
+  },
+  "Material": {
+    "General": [
+      "Type of product",
+      "Material",
+      "Color 1",
+      "Color 1 Munsell",
+      "Volume of content estimated",
+      "Figure/Weight",
+      "Material fill",
+      "Size",
+      "Gram weight",
+      "Color on resin/filler",
+      "Glue resin",
+      "Amount of glue",
+      "Number of resin balls",
+      "Amount of hardener",
+      "Penetration/Penetration test",
+      "Total weight",
+      "Length out ring",
+      "Head trimming shape",
+      "Drawing ID",
+      "Type 1",
+      "Colour 2",
+      "Size 2",
+      "Type 2",
+      "Colour 3",
+      "Size 3",
+      "Drawing A",
+      "FSC wood used",
+      "Stamp plate",
+      "Print",
+      "Color 4",
+      "Type 4",
+      "Packed size"
+    ]
+  },
+  "Brush Handle": {
+    "General": [
+      "Handle style",
+      "Handle material",
+      "Handle color 1",
+      "Handle color 2",
+      "Ferrule",
+      "Material ferrule",
+      "Supplier code",
+      "Weight handle",
+      "Drawing NBR"
+    ]
+  },
+  "Labelling": {
+    "General": [
+      "Product label front",
+      "Art No.",
+      "Bar code",
+      "Date",
+      "Color 1",
+      "Reference",
+      "Placed"
+    ]
+  },
+  "Packaging": {
+    "Inner Packaging": [
+      "Inner Art No.",
+      "Inner quantity in package",
+      "Inner weight",
+      "Inner quantity in package middle box",
+      "Inner water packing",
+      "Inner material",
+      "Inner weight labor",
+      "Inner size",
+      "Inner Art No. PzB",
+      "Inner color 1",
+      "Inner color 1 fill",
+      "Inner print",
+      "Inner placed"
+    ],
+    "Outer Packaging": [
+      "Outer Art No.",
+      "Outer quantity in package",
+      "Outer weight",
+      "Outer quantity in package middle box",
+      "Outer total pieces in outer packaging",
+      "Outer volume of package",
+      "Outer water packing",
+      "Outer middle labeling",
+      "Outer size",
+      "Outer Art No. PzB",
+      "Outer color 1",
+      "Outer color 1 fill",
+      "Outer print",
+      "Outer placed"
+    ],
+    "Pallet": [
+      "Packaging 1 layer",
+      "Total layer",
+      "Packaging 1 pallet",
+      "Stacking type"
+    ]
+  }
+}

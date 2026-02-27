@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>extract_data_agent Documentation</title>
+    <style>
+      :root {
+        --bg: #f6f4ef;
+        --paper: #ffffff;
+        --ink: #1c2733;
+        --muted: #5e6c78;
+        --line: #d8dee5;
+        --accent: #2a5f8a;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+        color: var(--ink);
+        background: linear-gradient(180deg, #eef3f7 0%, var(--bg) 44%, #faf9f6 100%);
+      }
+      .wrap {
+        max-width: 1080px;
+        margin: 0 auto;
+        padding: 40px 20px 72px;
+      }
+      .card {
+        background: var(--paper);
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        padding: 22px;
+        box-shadow: 0 10px 24px rgba(16, 26, 34, 0.06);
+      }
+      h1 {
+        margin: 0 0 10px;
+        font-size: 34px;
+        letter-spacing: 0.2px;
+      }
+      h2 {
+        margin: 0 0 10px;
+        font-size: 24px;
+      }
+      h3 {
+        margin: 0 0 8px;
+        font-size: 18px;
+      }
+      p {
+        margin: 0 0 12px;
+        line-height: 1.6;
+      }
+      .lead {
+        color: var(--muted);
+        font-size: 17px;
+      }
+      .stack {
+        display: grid;
+        gap: 18px;
+      }
+      .img-box {
+        margin-top: 14px;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        background: #f9fbfd;
+        padding: 10px;
+      }
+      img {
+        width: 100%;
+        height: auto;
+        display: block;
+      }
+      ul {
+        margin: 0;
+        padding-left: 20px;
+      }
+      li {
+        margin: 6px 0;
+      }
+      code {
+        background: #eef2f6;
+        padding: 2px 6px;
+        border-radius: 6px;
+      }
+      .tool {
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 14px;
+        background: #fcfdff;
+      }
+      .tool p {
+        margin-bottom: 8px;
+      }
+      .tag {
+        display: inline-block;
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: 0.3px;
+        text-transform: uppercase;
+        color: var(--accent);
+        background: #e8f2fb;
+        border: 1px solid #cde2f6;
+        border-radius: 999px;
+        padding: 4px 8px;
+        margin-bottom: 8px;
+      }
+      .grid {
+        display: grid;
+        gap: 12px;
+      }
+      @media (min-width: 900px) {
+        .grid {
+          grid-template-columns: 1fr 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="wrap stack">
+      <section class="card">
+        <h1>extract_data_agent Documentation</h1>
+        <p class="lead">
+          This page explains the runtime loop for <code>extract_data_agent</code>, then dives into
+          the <code>tool_executor</code> node and every tool exposed by <code>Toolset.registry()</code>.
+        </p>
+      </section>
+
+      <section class="card">
+        <h2>State Machine</h2>
+        <p>The diagram below is the current workflow reference.</p>
+        <div class="img-box">
+          <img src="agent_state_machine.svg" alt="extract_data_agent state machine" />
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>extract_data_agent Run (GIF)</h2>
+        <p>Animated terminal capture of the end-to-end extract_data_agent execution.</p>
+        <div class="img-box">
+          <img src="extract_data_agent.gif" alt="extract_data_agent terminal run GIF" />
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Workflow Nodes (Short Overview)</h2>
+        <ul>
+          <li><code>planner</code> (LLM): builds or repairs <code>planned_steps</code>, selects <code>next_step</code>, and sends to pre-check.</li>
+          <li><code>critic</code> (LLM, pre): either approves execution or requests replan before any tool runs.</li>
+          <li><code>tool_executor</code>: executes exactly one selected tool step, updates state, then returns to critic post-check.</li>
+          <li><code>critic</code> (LLM, post): either continue with planner for next step or replan.</li>
+          <li><code>telemetry</code>: logs decisions, transitions, tool outcomes, and failures across all nodes.</li>
+        </ul>
+      </section>
+
+      <section class="card stack">
+        <h2>tool_executor Node (Detailed)</h2>
+        <p>
+          The executor is a single-step runtime node in <code>extract_data_agent/executor.py</code>.
+          It does not plan. It resolves one tool call, runs it, normalizes outputs, and writes state for the next critic phase.
+        </p>
+
+        <h3>Execution Behavior</h3>
+        <ul>
+          <li>Reads <code>next_step</code> from planner output and resolves <code>$context_key</code> references in step input.</li>
+          <li>Injects defaults for some tools (for example MinIO bucket/prefix/local dir and image output dirs).</li>
+          <li>Invokes either <code>tool.invoke(payload)</code> or callable fallback.</li>
+          <li>Normalizes tool result to dict and raises on <code>result["error"]</code>.</li>
+          <li>If downloader returns <code>downloaded_files</code>, derives <code>excel_files</code> automatically.</li>
+          <li>Appends to <code>executed_steps</code>, advances <code>current_step_index</code>, sets <code>critic_phase="post"</code>, and routes back to critic.</li>
+        </ul>
+
+        <h3>State Keys Written by tool_executor</h3>
+        <ul>
+          <li><code>workflow_status="critic"</code>, <code>critic_phase="post"</code></li>
+          <li><code>last_tool_result</code>, <code>last_executed_tool</code>, <code>executed_steps</code>, <code>step_messages</code></li>
+          <li>Conditional payload keys such as <code>excel_files</code>, <code>excel_rows_text</code>, <code>products_dict</code>, <code>product_table_rows</code>, <code>product_images</code></li>
+          <li>Ingestion summaries: <code>ingest_result</code> and <code>ingest_images_result</code></li>
+        </ul>
+      </section>
+
+      <section class="card stack">
+        <h2>Toolset Used by tool_executor</h2>
+        <p>
+          The registry exposes 9 tools. The executor receives a tool name from planner,
+          resolves inputs, and executes the matching tool.
+        </p>
+
+        <div class="grid">
+          <article class="tool">
+            <span class="tag">File / Data Source</span>
+            <h3>downloader_from_datalake</h3>
+            <p>Downloads MinIO objects under a prefix into local storage.</p>
+            <p><strong>Inputs:</strong> <code>bucket</code>, <code>prefix</code>, <code>local_dir</code></p>
+            <p><strong>Output highlights:</strong> <code>downloaded_files</code>, <code>message</code></p>
+          </article>
+
+          <article class="tool">
+            <span class="tag">File / Parsing</span>
+            <h3>read_excel_rows_text</h3>
+            <p>Reads spreadsheets and normalizes sheet rows into text blocks by file and sheet.</p>
+            <p><strong>Inputs:</strong> <code>excel_files</code></p>
+            <p><strong>Output highlights:</strong> <code>excel_rows_text</code>, <code>message</code></p>
+          </article>
+
+          <article class="tool">
+            <span class="tag">File / Images</span>
+            <h3>extract_excel_images_by_section</h3>
+            <p>Extracts embedded Excel images and maps each image to a top-level section via row proximity.</p>
+            <p><strong>Inputs:</strong> <code>excel_files</code>, <code>target_sections</code>, optional <code>output_dir</code></p>
+            <p><strong>Output highlights:</strong> <code>images_by_section</code>, <code>images</code>, <code>output_dir</code></p>
+          </article>
+
+          <article class="tool">
+            <span class="tag">LLM</span>
+            <h3>translate_chinese_text_llm</h3>
+            <p>Translates parsed spreadsheet text to English while preserving workbook structure.</p>
+            <p><strong>Inputs:</strong> <code>excel_rows_text</code></p>
+            <p><strong>Output highlights:</strong> updated <code>excel_rows_text</code>, <code>message</code></p>
+          </article>
+
+          <article class="tool">
+            <span class="tag">LLM</span>
+            <h3>fill_schema_values_llm</h3>
+            <p>Extracts and normalizes section/subsection key-value facts according to the target schema.</p>
+            <p><strong>Inputs:</strong> <code>excel_rows_text</code>, <code>target_sections</code>, <code>target_section_schema</code></p>
+            <p><strong>Output highlights:</strong> <code>products_dict</code>, <code>product_table_rows</code></p>
+          </article>
+
+          <article class="tool">
+            <span class="tag">LLM + Images</span>
+            <h3>arrange_extract_excel_images_llm</h3>
+            <p>Assigns extracted images to section/subsection buckets and prepares image ingestion rows.</p>
+            <p><strong>Inputs:</strong> <code>excel_files</code>, <code>target_section_schema</code>, optional <code>products_dict</code>, optional <code>output_dir</code></p>
+            <p><strong>Output highlights:</strong> <code>product_images</code></p>
+          </article>
+
+          <article class="tool">
+            <span class="tag">ClickHouse</span>
+            <h3>ingest_product_facts_clickhouse</h3>
+            <p>Ensures table exists and ingests normalized fact rows into <code>product_facts</code>.</p>
+            <p><strong>Inputs:</strong> <code>product_table_rows</code></p>
+            <p><strong>Output highlights:</strong> <code>inserted_rows</code>, <code>table</code>, <code>run_id</code></p>
+          </article>
+
+          <article class="tool">
+            <span class="tag">ClickHouse</span>
+            <h3>ingest_product_images_clickhouse</h3>
+            <p>Ensures table exists and ingests prepared image rows into <code>product_images</code>.</p>
+            <p><strong>Inputs:</strong> <code>product_images</code></p>
+            <p><strong>Output highlights:</strong> <code>inserted_rows</code>, <code>table</code>, <code>run_id</code></p>
+          </article>
+
+          <article class="tool">
+            <span class="tag">ClickHouse</span>
+            <h3>clickhouse_table_count</h3>
+            <p>Returns row count for a target table in the configured ClickHouse database.</p>
+            <p><strong>Inputs:</strong> <code>table</code> (default: <code>product_facts</code>)</p>
+            <p><strong>Output highlights:</strong> <code>table</code>, <code>row_count</code></p>
+          </article>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>
