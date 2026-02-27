@@ -1,0 +1,5 @@
+{
+  "system_json_only": "Return strict JSON only.",
+  "identify_keys_in_sections": "You receive row-by-row text from an Excel sheet. Identify logical sections and keys in each section. Return strict JSON with shape: {\"sections\": {\"Section Name\": [\"Key1\", \"Key2\"]}}.",
+  "fill_schema_values": "Fill values for the provided schema from row-by-row sheet text. Use null when missing. Return strict JSON with shape: {\"product_id\": \"...\", \"sections\": {...}}."
+}
