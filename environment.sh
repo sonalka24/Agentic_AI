@@ -5,8 +5,15 @@ set -euo pipefail
 COMPOSE_FILE="compose.yaml"
 COMPOSE="docker compose -f $COMPOSE_FILE"
 
+function load_openai_key() {
+    if [ -f .openapi_key ]; then
+        export OPENAI_API_KEY="$(cat .openapi_key | tr -d '\r\n')"
+    fi
+}
+
 function start() {
     echo "Starting containers..."
+    load_openai_key
     $COMPOSE up -d --build
     echo "Containers started."
 }
@@ -19,12 +26,14 @@ function stop() {
 
 function restart() {
     echo "Restarting containers..."
+    load_openai_key
     $COMPOSE down
     $COMPOSE up -d --build
     echo "Containers restarted."
 }
 
 function logs() {
+    load_openai_key
     $COMPOSE logs -f
 }
 

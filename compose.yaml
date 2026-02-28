@@ -2,7 +2,9 @@ version: "3.9"
 
 services:
   agent:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfiles/agent.Dockerfile
     container_name: agentic-ai
     volumes:
       - ./app:/app
@@ -13,8 +15,12 @@ services:
     restart: unless-stopped
 
   clickhouse:
-    image: clickhouse/clickhouse-server:24.3
+    build:
+      context: .
+      dockerfile: Dockerfiles/clickhouse.Dockerfile
     container_name: clickhouse
+    env_file:
+      - .env
     ports:
       - "8123:8123"
       - "9000:9000"
@@ -23,7 +29,6 @@ services:
       CLICKHOUSE_PASSWORD: ${CLICKHOUSE_PASSWORD:-}
     volumes:
       - clickhouse_data:/var/lib/clickhouse
-      - ./clickhouse-init.sql:/docker-entrypoint-initdb.d/00-init.sql:ro
     ulimits:
       nofile:
         soft: 262144
@@ -31,9 +36,12 @@ services:
     restart: unless-stopped
 
   minio:
-    image: quay.io/minio/minio:latest
+    build:
+      context: .
+      dockerfile: Dockerfiles/minio.Dockerfile
     container_name: minio
-    command: server /data --console-address ":9001"
+    env_file:
+      - .env
     ports:
       - "9002:9001"
       - "9001:9000"
@@ -47,6 +55,8 @@ services:
   metabase:
     image: metabase/metabase:latest
     container_name: metabase
+    env_file:
+      - .env
     ports:
       - "3000:3000"
     environment:
@@ -56,6 +66,18 @@ services:
     depends_on:
       - clickhouse
     restart: unless-stopped
+
+  metabase-init:
+    build:
+      context: .
+      dockerfile: Dockerfiles/metabase-init.Dockerfile
+    container_name: metabase-init
+    env_file:
+      - .env
+    depends_on:
+      - metabase
+      - clickhouse
+    restart: "no"
 
 volumes:
   clickhouse_data:

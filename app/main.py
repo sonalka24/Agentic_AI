@@ -1,13 +1,17 @@
-import pandas as pd
 from minio import Minio
 from urllib3.exceptions import HTTPError
 
-from agent_graph import build_agent
+from extract_data_agent import build_agent
 from config import load_config
 from tools import Toolset
 
 
 def main():
+    """Run end-to-end extraction + ingestion workflow.
+
+    @return None.
+    @raises RuntimeError If MinIO connectivity or pipeline execution fails.
+    """
     config = load_config()
     client = Minio(
         config.minio_endpoint,
@@ -35,16 +39,17 @@ def main():
     if result.get("error"):
         raise RuntimeError(result["error"])
 
-    print(result.get("message", "Run complete."))
-    print(f"OpenAI configured: {result.get('openai_configured')} | model={config.openai_model}")
-    print(f"Mode: {result.get('execution_mode')}")
-    print(f"Schema sections: {len(result.get('common_schema', {}))}")
+    ingest_images_result = result.get("ingest_images_result", {})
+    print(
+        f"Ingested to ClickHouse warehouse: table={ingest_images_result.get('table')} "
+        f"rows={ingest_images_result.get('inserted_rows')} run_id={ingest_images_result.get('run_id')}"
+    )
 
-    product_rows = result.get("product_table_rows", [])
-    print(f"Tabular rows: {len(product_rows)}")
-    if product_rows:
-        preview_df = pd.DataFrame(product_rows)
-        print(preview_df[["product_id", "section", "key", "value"]].head(30).to_string(index=False))
+    ingest_result = result.get("ingest_result", {})
+    print(
+        f"Ingested to ClickHouse warehouse: table={ingest_result.get('table')} "
+        f"rows={ingest_result.get('inserted_rows')} run_id={ingest_result.get('run_id')}"
+    )
 
 
 if __name__ == "__main__":
